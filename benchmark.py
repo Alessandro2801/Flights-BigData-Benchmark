@@ -10,10 +10,16 @@ def main():
     parser.add_argument("job", type=str, choices=["job_1", "job_2"], help="Job name (matching script prefix)")
     parser.add_argument("master", type=str, choices=["local[*]", "yarn"], help="Master type execution environment")
     parser.add_argument("--fractions", type=str, default="0.01 0.2 0.5 0.7", help="Fractions of dataset to use")
+    
+    # NUOVO: Aggiungiamo il flag per intercettare se siamo su AWS
+    parser.add_argument("--aws", action="store_true", help="Execute using cloud scripts (run_aws.sh)")
     args = parser.parse_args()
 
-    # Configurazione automatica della directory di destinazione sicura
-    master_dir = "local" if "local" in args.master else "yarn"
+    # Se l'utente ha passato il flag --aws, usiamo run_aws.sh, altrimenti il run.sh classico
+    script_to_run = "run_aws.sh" if args.aws else "run.sh"
+    
+    # Determiniamo la cartella finale dei log (se eseguiamo in modalità aws, salviamo in logs/aws/)
+    master_dir = "aws" if args.aws else ("local" if "local" in args.master else "yarn")
 
     # Le tre cartelle reali presenti nel tuo progetto Flight
     tools = ["spark-core", "spark-sql", "hive"]
@@ -24,19 +30,18 @@ def main():
 
     # Dizionario per memorizzare i tempi di esecuzione per i grafici
     execution_data = {tool: [] for tool in tools}
-    
-    # Memorizziamo solo le frazioni che hanno avuto successo per ciascun tool (evita disallineamenti sull'asse X)
     successful_fractions = {tool: [] for tool in tools}
 
     for tool in tools:
         for fraction in fractions:
-            print(f"[BENCHMARK] Avvio {tool} -> {args.job} su dataset: {fraction} ({args.master})")
+            env_label = "AWS_EMR" if args.aws else args.master
+            print(f"[BENCHMARK] Avvio {tool} -> {args.job} su dataset: {fraction} ({env_label})")
             
             start = time.time()
             
-            # Esecuzione nativa entrando nella cartella specifica (cwd) della tecnologia
+            # MODIFICATO: Usa script_to_run (dinamico!) invece del valore fisso
             process = subprocess.run(
-                ["bash", "run.sh", args.job, fraction, args.master],
+                ["bash", script_to_run, args.job, fraction, args.master],
                 cwd=tool,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
@@ -45,15 +50,13 @@ def main():
             end = time.time()
             exec_time = end - start
 
-            # Creazione dinamica della struttura dei log divisa per master (local/yarn)
+            # Struttura dei log dinamica
             output_path = os.path.join("logs", master_dir, tool, args.job)
             os.makedirs(output_path, exist_ok=True)
             
-            # Salvataggio del file di log di output standard
             with open(os.path.join(output_path, f"stdout-{fraction}.txt"), "wb") as f:
                 f.write(process.stdout)
 
-            # Se il processo termina correttamente con exit code 0, salviamo il tempo per i grafici
             if process.returncode == 0:
                 print(f"[BENCHMARK] Completato {tool}#{args.job} per \"{fraction}\" in {exec_time:.2f} secondi")
                 execution_data[tool].append(exec_time)
@@ -66,14 +69,12 @@ def main():
     # --- GENERAZIONE GRAFICI CON MATPLOTLIB ---
     plt.figure(figsize=(11, 6))
 
-    # Definizione colori accattivanti e coerenti con le cartelle reali
     colors = {
         "hive": "red",
         "spark-core": "green",
         "spark-sql": "blue"
     }
 
-    # Disegna le linee sul grafico in modo dinamico
     for tool in tools:
         if execution_data[tool]:
             x_pos = list(range(len(successful_fractions[tool])))
@@ -87,7 +88,6 @@ def main():
                 color=colors.get(tool, "black")
             )
 
-    # Definizione pulita delle etichette dell'asse X basata sulla pianificazione teorica iniziale
     full_x_labels = [f.replace("flights_", "") + "%" if "cleaned" not in f else "100% (Cleaned)" for f in fractions]
     plt.xticks(list(range(len(fractions))), full_x_labels)
     
@@ -98,7 +98,6 @@ def main():
     plt.legend(fontsize=10)
     plt.tight_layout()
 
-    # Salvataggio automatico del grafico nella cartella del rispettivo master
     graph_folder = os.path.join("logs", master_dir)
     os.makedirs(graph_folder, exist_ok=True)
     output_graph = os.path.join(graph_folder, f"benchmark_{args.job}.png")
