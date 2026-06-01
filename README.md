@@ -17,7 +17,7 @@ La suite esegue i medesimi algoritmi di analisi (Job 1 e Job 2) su 5 frazioni pr
 
 Il benchmark si basa sul popolare dataset pubblico **"Flight Status Prediction"** disponibile sulla piattaforma Kaggle. Il file raccoglie i record dettagliati di tutti i voli di linea interni degli Stati Uniti, tracciando ritardi, cancellazioni e metriche operative delle compagnie aeree.
 
-* **Link Ufficiale al Dataset:** [Kaggle - Flight Status Prediction](https://www.kaggle.com/datasets/hrishitpatil/flight-data-2024)
+* **Link Ufficiale al Dataset:** [Kaggle - Flight Delay Dataset — 2024](https://www.kaggle.com/datasets/hrishitpatil/flight-data-2024)
 * **Dataset Shape (Matrice dei Dati):**
   * **Numero di Righe (Record):** ~7 milioni di righe nella versione completa (`flights_cleaned.csv`).
   * **Numero di Colonne (Attributi):** 9 features selezionate per l'analisi (`month`, `op_unique_carrier`, `origin`, `dest`, `dep_delay`, `arr_delay`, `cancelled`, `cancellation_code`, `delay_code`).
