@@ -15,7 +15,7 @@ La suite esegue i medesimi algoritmi di analisi (Job 1 e Job 2) su 5 frazioni pr
 
 ## 📊 Dataset Considerato
 
-Il benchmark si basa sul popolare dataset pubblico **"Flight Status Prediction"** disponibile sulla piattaforma Kaggle. Il file raccoglie i record dettagliati di tutti i voli di linea interni degli Stati Uniti, tracciando ritardi, cancellazioni e metriche operative delle compagnie aeree.
+Il benchmark si basa sul popolare dataset pubblico **"Flight Delay Dataset — 2024"** disponibile sulla piattaforma Kaggle. Il file raccoglie i record dettagliati di tutti i voli di linea interni degli Stati Uniti, tracciando ritardi, cancellazioni e metriche operative delle compagnie aeree.
 
 * **Link Ufficiale al Dataset:** [Kaggle - Flight Delay Dataset — 2024](https://www.kaggle.com/datasets/hrishitpatil/flight-data-2024)
 * **Dataset Shape (Matrice dei Dati):**
@@ -41,6 +41,7 @@ flight-bigdata-benchmark/
 │   ├── generate_data.sh   # Script Bash per orchestrare la sequenza di scaricamento e preparazione
 │   ├── preprocessing.py   # Logica di pulizia iniziale, rimozione record inconsistenti e selezione feature
 │   └── generate_portions.py # Algoritmo di campionamento statistico per generare i file all'1%, 20%, 50%, 70%
+├── docs/                  # Documenti di progetto
 ├── data/                  
 │   ├── raw/               # Contiene il file ZIP originario e il CSV grezzo scaricato da Kaggle
 │   └── processed/         # Contiene i file finali pronti per HDFS (flights_1.csv, flights_20.csv, ecc.)
